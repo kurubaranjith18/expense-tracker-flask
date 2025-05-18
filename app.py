@@ -66,8 +66,19 @@ def login():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    expenses = Expense.query.filter_by(user_id=session['user_id']).order_by(Expense.date.desc()).all()
-    return render_template("dashboard.html", expenses=expenses)
+
+    expenses = Expense.query.filter_by(user_id=session['user_id']).all()
+
+    # Create category summary
+    category_totals = {}
+    for exp in expenses:
+        category_totals[exp.category] = category_totals.get(exp.category, 0) + exp.amount
+
+    labels = list(category_totals.keys())
+    data = list(category_totals.values())
+
+    return render_template("dashboard.html", expenses=expenses, labels=labels, data=data)
+
 
     
 @app.route('/add_expense', methods=['POST'])
