@@ -66,7 +66,25 @@ def login():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    return f"Welcome {session['username']}! You are logged in."
+    expenses = Expense.query.filter_by(user_id=session['user_id']).order_by(Expense.date.desc()).all()
+    return render_template("dashboard.html", expenses=expenses)
+
+    
+@app.route('/add_expense', methods=['POST'])
+def add_expense():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    category = request.form['category']
+    amount = float(request.form['amount'])
+    date = request.form['date']
+    note = request.form['note']
+
+    new_expense = Expense(user_id=session['user_id'], category=category, amount=amount, date=date, note=note)
+    db.session.add(new_expense)
+    db.session.commit()
+    return redirect(url_for('dashboard'))
+
 
 # Logout
 @app.route('/logout')
