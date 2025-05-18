@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h2>Welcome, {{ session['username'] }}</h2>
@@ -21,6 +22,23 @@
         <li>{{ exp.date }} - ₹{{ exp.amount }} - {{ exp.category }} - {{ exp.note }}</li>
     {% endfor %}
     </ul>
+
+    <h3>Category Summary (Pie Chart)</h3>
+    <canvas id="expenseChart" width="400" height="400"></canvas>
+    <script>
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: {{ labels | safe }},
+                datasets: [{
+                    label: 'Spending by Category',
+                    data: {{ data | safe }},
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#81C784', '#BA68C8']
+                }]
+            }
+        });
+    </script>
 
     <p><a href="/logout">Logout</a></p>
 </body>
