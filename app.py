@@ -5,25 +5,28 @@ from flask_bcrypt import Bcrypt
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure secret in production
 
+# Configure SQLite database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
-# Create Users table
+# Define User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(200), nullable=False)
 
-@app.before_first_request
-def create_tables():
+# ✅ Create tables immediately on app start
+with app.app_context():
     db.create_all()
 
+# Home page
 @app.route('/')
 def home():
     return render_template("home.html")
 
+# Register page
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -36,6 +39,7 @@ def register():
         return redirect(url_for('login'))
     return render_template("register.html")
 
+# Login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -50,16 +54,19 @@ def login():
             return "Invalid credentials"
     return render_template("login.html")
 
+# Dashboard (protected)
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     return f"Welcome {session['username']}! You are logged in."
 
+# Logout
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('home'))
 
+# Run the Flask app
 if __name__ == "__main__":
     app.run(debug=True)
